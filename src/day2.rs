@@ -1,9 +1,15 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use regex::Regex;
+use lazy_static::lazy_static;
 
+
+lazy_static! {
+    static ref REGEX_MATCHER : Regex = Regex::new(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)").unwrap();
+}
 
 #[aoc_generator(day2)]
 fn aoc_generator(input: &str) -> Vec<PasswordPolicy> {
-    input.lines().map(|l| PasswordPolicy::parse(l)).collect()
+    input.lines().map(PasswordPolicy::parse_regex).collect()
 }
 
 
@@ -15,6 +21,7 @@ struct PasswordPolicy {
 }
 
 impl PasswordPolicy {
+    #[allow(dead_code)]
     fn parse(string: &str) -> PasswordPolicy
     {
         let mut policy = PasswordPolicy::empty();
@@ -22,11 +29,24 @@ impl PasswordPolicy {
         let number_values = space_split[0].split("-").map(|l| l.parse().unwrap()).collect::<Vec<i32>>();
 
         policy.range = (number_values[0], number_values[1]);
-        policy.character = space_split[1][0..1].chars().next().unwrap();
+        policy.character = space_split[1].chars().nth(0).unwrap();
         policy.password = space_split[2].chars().collect();
 
         policy
     }
+
+    fn parse_regex(string : &str) -> PasswordPolicy
+    {
+        let mut policy = PasswordPolicy::empty();
+        let re = REGEX_MATCHER.captures(string).unwrap();
+
+        policy.range = (re[1].parse().unwrap(), re[2].parse().unwrap());
+        policy.character = re[3].chars().nth(0).unwrap();
+        policy.password = re[4].chars().collect();
+
+        policy
+    }
+
     fn empty() -> PasswordPolicy {
         PasswordPolicy{
             range: (0, 0),
@@ -52,6 +72,15 @@ fn part1(input: &[PasswordPolicy]) -> i32 {
     }
 
     valid
+}
+
+#[aoc(day2, part1, take2)]
+fn part1_2(input: &[PasswordPolicy]) -> usize {
+    input.iter().filter(|pol| {
+        let b = pol.password.iter().filter(|c| **c == pol.character).count(); 
+        b >= (pol.range.0 as usize) && b <= (pol.range.1 as usize)
+    }
+).count()
 }
 
 // quick and dirty
@@ -103,8 +132,7 @@ fn part1_dirty(input: &str) -> i32 {
 }
 
 #[aoc(day2, part2)]
-fn part2(input: &[PasswordPolicy]) -> i32 
-{   
+fn part2(input: &[PasswordPolicy]) -> i32 {   
     let mut valid = 0;
     for policy in input {
 
@@ -129,6 +157,12 @@ mod tests {
         assert_eq!(part1(&aoc_generator("1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc")), 2);
         
         assert_eq!(part1(&aoc_generator("1-1 a: abcde\n1-1 b: acadefg\n2-9 c: ccccccccc")), 2);
+    }
+    #[test]
+    fn part1_2_test() {
+        assert_eq!(part1_2(&aoc_generator("1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc")), 2);
+        
+        assert_eq!(part1_2(&aoc_generator("1-1 a: abcde\n1-1 b: acadefg\n2-9 c: ccccccccc")), 2);
     }
     #[test]
     fn part2_test() {

@@ -17,6 +17,7 @@ fn aoc_generator(input : &str) -> Map{
 }
 // this one is fancier but slower
 //#[aoc_generator(day3)]
+#[allow(dead_code)]
 fn aoc_generator_2(input : &str) -> Map {
     let data : Vec<Vec<bool>> = input.lines().map(|l| l.chars().map(|c| c == '#').collect()).collect();
     let mut map = Map::create(&data.len(), &data[0].len());

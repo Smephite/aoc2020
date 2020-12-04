@@ -6,7 +6,10 @@ lazy_static! {
     static ref REGEX_MATCHER: Regex = Regex::new(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)").unwrap();
 }
 
-#[aoc_generator(day2)]
+#[aoc_generator(day2, part1, def)]
+#[aoc_generator(day2, part1, take2)]
+#[aoc_generator(day2, part2, def)]
+#[aoc_generator(day2, part2, take2)]
 fn aoc_generator(input: &str) -> Vec<PasswordPolicy> {
     input.lines().map(PasswordPolicy::parse_regex).collect()
 }
@@ -54,7 +57,7 @@ impl PasswordPolicy {
     }
 }
 
-#[aoc(day2, part1)]
+#[aoc(day2, part1, def)]
 fn part1(input: &[PasswordPolicy]) -> i32 {
     let mut valid = 0;
     for policy in input {
@@ -84,8 +87,7 @@ fn part1_2(input: &[PasswordPolicy]) -> usize {
 }
 
 // quick and dirty
-//#[aoc(day2, part1, dirty)]
-#[allow(dead_code)]
+#[aoc(day2, part1, dirty)]
 fn part1_dirty(input: &str) -> i32 {
     let split = input.split("\n");
     let mut val = 0;
@@ -125,7 +127,7 @@ fn part1_dirty(input: &str) -> i32 {
     val
 }
 
-#[aoc(day2, part2)]
+#[aoc(day2, part2, def)]
 fn part2(input: &[PasswordPolicy]) -> i32 {
     let mut valid = 0;
     for policy in input {

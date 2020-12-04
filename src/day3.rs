@@ -15,8 +15,7 @@ fn aoc_generator(input: &str) -> Map {
     map
 }
 // this one is fancier but slower
-//#[aoc_generator(day3)]
-#[allow(dead_code)]
+#[aoc_generator(day3, part1, no_mod)]
 fn aoc_generator_2(input: &str) -> Map {
     let data: Vec<Vec<bool>> = input
         .lines()

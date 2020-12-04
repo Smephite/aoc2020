@@ -1,6 +1,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use std::collections::BTreeMap;
 
-#[aoc_generator(day4)]
+#[aoc_generator(day4, part1, def)]
+#[aoc_generator(day4, part2, def)]
 fn generator(input: &str) -> Vec<Passport> {
     input
         .split("\n\n")
@@ -24,6 +26,29 @@ fn generator(input: &str) -> Vec<Passport> {
                 };
             }
             pass
+        })
+        .collect()
+}
+
+// inspiration from https://github.com/pedantic79/advent-of-code-2020/commit/725b8eca3fbcad264deed4fa33f311ccaaaa31b5
+
+#[aoc_generator(day4, part1, fast)]
+#[aoc_generator(day4, part2, fast)]
+fn generator_2(input: &str) -> Option<Vec<FastPassport>> {
+    input
+        .split("\n\n")
+        .map(|pass_str| {
+            pass_str
+                .split_whitespace()
+                .map(|field| {
+                    let split = field
+                        .split(":")
+                        .map(|s| String::from(s))
+                        .collect::<Vec<String>>();
+                    Some((split[0].to_owned(), split[1].to_owned()))
+                })
+                .collect::<Option<_>>()
+                .map(FastPassport)
         })
         .collect()
 }
@@ -83,13 +108,79 @@ impl Passport {
     }
 }
 
-#[aoc(day4, part1)]
+#[derive(Debug)]
+struct FastPassport(BTreeMap<String, String>);
+
+impl FastPassport {
+    fn is_valid_1(&self) -> bool {
+        self.0
+            .keys()
+            .filter(|&key| key != "cid")
+            .eq(["byr", "ecl", "eyr", "hcl", "hgt", "iyr", "pid"].iter())
+    }
+
+    fn is_valid_2(&self) -> bool {
+        self.is_valid_1()
+            && self.0.iter().all(|(k, v)| match &k[..] {
+                "byr" => {
+                    v.chars().all(|c| c.is_ascii_digit()) && {
+                        let y = v.parse::<u16>().unwrap_or(0);
+                        y >= 1920 && y <= 2002
+                    }
+                }
+                "iyr" => {
+                    v.chars().all(|c| c.is_ascii_digit()) && {
+                        let y = v.parse::<u16>().unwrap_or(0);
+                        y >= 2010 && y <= 2020
+                    }
+                }
+                "eyr" => {
+                    v.chars().all(|c| c.is_ascii_digit()) && {
+                        let y = v.parse::<u16>().unwrap_or(0);
+                        y >= 2020 && y <= 2030
+                    }
+                }
+                "hgt" => {
+                    let h = v[..v.len() - 2].parse::<u16>().unwrap_or(0);
+                    match &v[v.len() - 2..] {
+                        "cm" => h >= 150 && h <= 193,
+                        "in" => h >= 59 && h <= 76,
+                        _ => false,
+                    }
+                }
+                "hcl" => {
+                    let chars = v.chars().collect::<Vec<char>>();
+                    chars[0] == '#'
+                        && chars[1..].iter().all(|c| c.is_ascii_hexdigit())
+                        && v.len() == 7
+                }
+                "ecl" => ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
+                    .iter()
+                    .any(|e| e == v),
+                "pid" => v.len() == 9 && v.chars().all(|c| c.is_ascii_digit()),
+                "cid" => true, // ignore
+                _ => false,
+            })
+    }
+}
+
+#[aoc(day4, part1, def)]
 fn part1(passports: &[Passport]) -> usize {
     passports.iter().filter(|p| p.is_valid_1()).count()
 }
 
-#[aoc(day4, part2)]
+#[aoc(day4, part2, def)]
 fn part2(passports: &[Passport]) -> usize {
+    passports.iter().filter(|p| p.is_valid_2()).count()
+}
+
+#[aoc(day4, part1, fast)]
+fn part1_2(passports: &[FastPassport]) -> usize {
+    passports.iter().filter(|p| p.is_valid_1()).count()
+}
+
+#[aoc(day4, part2, fast)]
+fn part2_2(passports: &[FastPassport]) -> usize {
     passports.iter().filter(|p| p.is_valid_2()).count()
 }
 
@@ -98,13 +189,15 @@ mod tests {
     use super::*;
     #[test]
     fn part1_test() {
-        let data = generator(
+        let g =
             "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd\nbyr:1937 iyr:2017 cid:147 hgt:183cm\n\n\
-        iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884\nhcl:#cfa07d byr:1929\n\n\
-        hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn pid:760753108 byr:1931\nhgt:179cm\n\n\
-        hcl:#cfa07d eyr:2025 pid:166559648\niyr:2011 ecl:brn hgt:59in",
-        );
+    iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884\nhcl:#cfa07d byr:1929\n\n\
+    hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn pid:760753108 byr:1931\nhgt:179cm\n\n\
+    hcl:#cfa07d eyr:2025 pid:166559648\niyr:2011 ecl:brn hgt:59in";
+
+        let data = generator(g);
         assert_eq!(part1(&data), 2);
+        assert_eq!(part1_2(&generator_2(g).unwrap()), 2);
     }
 
     #[test]
@@ -121,7 +214,9 @@ mod tests {
 
         println!("Invalid:");
         assert_eq!(part2(&generator(invalid)), 0);
+        assert_eq!(part2_2(&generator_2(invalid).unwrap()), 0);
         println!("Valid:");
         assert_eq!(part2(&generator(valid)), 4);
+        assert_eq!(part2_2(&generator_2(valid).unwrap()), 4);
     }
 }

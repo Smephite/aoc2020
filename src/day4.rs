@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 
 #[aoc_generator(day4, part1, def)]
 #[aoc_generator(day4, part2, def)]
+#[aoc_generator(day4, part2, def_fast)]
 fn generator(input: &str) -> Vec<Passport> {
     input
         .split("\n\n")
@@ -106,6 +107,45 @@ impl Passport {
             )
             && matches!(scan_fmt!(&self.pid, "{/\\d{9}$/}", usize), Ok(_))
     }
+
+    fn is_valid_2_2(&self) -> bool {
+        true && {
+            self.byr.chars().all(|c| c.is_ascii_digit()) && {
+                let y = self.byr.parse::<u16>().unwrap_or(0);
+                y >= 1920 && y <= 2002
+            }
+        } && {
+            self.iyr.chars().all(|c| c.is_ascii_digit()) && {
+                let y = self.iyr.parse::<u16>().unwrap_or(0);
+                y >= 2010 && y <= 2020
+            }
+        } && {
+            self.eyr.chars().all(|c| c.is_ascii_digit()) && {
+                let y = self.eyr.parse::<u16>().unwrap_or(0);
+                y >= 2020 && y <= 2030
+            }
+        } && self.hgt.len() > 2
+            && {
+                let h = self.hgt[..self.hgt.len() - 2].parse::<u16>().unwrap_or(0);
+                match &self.hgt[self.hgt.len() - 2..] {
+                    "cm" => h >= 150 && h <= 193,
+                    "in" => h >= 59 && h <= 76,
+                    _ => false,
+                }
+            }
+            && {
+                let chars = self.hcl.chars().collect::<Vec<char>>();
+                chars[0] == '#'
+                    && chars[1..].iter().all(|c| c.is_ascii_hexdigit())
+                    && self.hcl.len() == 7
+            }
+            && {
+                ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
+                    .iter()
+                    .any(|e| e == &self.ecl)
+            }
+            && { self.pid.len() == 9 && self.pid.chars().all(|c| c.is_ascii_digit()) }
+    }
 }
 
 #[derive(Debug)]
@@ -184,6 +224,11 @@ fn part2_2(passports: &[FastPassport]) -> usize {
     passports.iter().filter(|p| p.is_valid_2()).count()
 }
 
+#[aoc(day4, part2, def_fast)]
+fn part2_3(passports: &[Passport]) -> usize {
+    passports.iter().filter(|p| p.is_valid_2_2()).count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -215,8 +260,10 @@ mod tests {
         println!("Invalid:");
         assert_eq!(part2(&generator(invalid)), 0);
         assert_eq!(part2_2(&generator_2(invalid).unwrap()), 0);
+        assert_eq!(part2_3(&generator(invalid)), 0);
         println!("Valid:");
         assert_eq!(part2(&generator(valid)), 4);
         assert_eq!(part2_2(&generator_2(valid).unwrap()), 4);
+        assert_eq!(part2_3(&generator(valid)), 4);
     }
 }

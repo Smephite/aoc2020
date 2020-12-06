@@ -24,6 +24,7 @@ fn part2(input: &str) -> usize {
     input
         .split("\n\n")
         .map(|group| {
+            let lines = group.lines().count();
             group
                 .bytes()
                 .filter(|c| c.is_ascii_alphabetic())
@@ -32,7 +33,7 @@ fn part2(input: &str) -> usize {
                     arr
                 })
                 .iter()
-                .filter(|b| **b == group.lines().count())
+                .filter(|b| **b == lines)
                 .count()
         })
         .sum()

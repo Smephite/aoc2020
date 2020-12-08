@@ -20,7 +20,7 @@ fn generator_parents(input: &str) -> HashMap<String, HashMap<String, usize>> {
         let color = part.next().unwrap();
         let color = String::from(&color[..color.len() - " bags".len()]);
 
-        if (!bags.contains_key(&color)) {
+        if !bags.contains_key(&color) {
             bags.insert(color.clone(), HashMap::new());
         }
 
@@ -30,7 +30,7 @@ fn generator_parents(input: &str) -> HashMap<String, HashMap<String, usize>> {
             let num = num_str.parse().unwrap_or(0);
             let c_color = String::from(&parent_desc[num_str.len() + 1..]);
 
-            if (num == 0) {
+            if num == 0 {
                 //println!{"Bag {} contains no other", color};
                 return;
             }

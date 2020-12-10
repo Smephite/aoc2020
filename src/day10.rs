@@ -26,40 +26,27 @@ fn part1(input: &[usize]) -> usize {
 
 #[aoc(day10, part2)]
 fn part2(input: &[usize]) -> usize {
-    println!("part2 {:?}", input.to_vec());
-    count_posibilities(input, &0)
-}
+    let mut branches = vec![0; input.len()];
 
-fn count_posibilities(input: &[usize], start: &usize) -> usize {
-    if start >= &(input.len() - 1) {
-        // last element
-        return 1;
-    }
+    branches[0] = 1;
 
-    if input[start + 1] - input[*start] > 3 {
-        // first diff is greater 3 --> all following can only be equal or larger --> not valid
-        return 0;
-    }
+    for i in (1..branches.len()) {
+        let mut count = 0;
 
-    let mut ret = 0;
-
-    for i in (1..4)
-        .into_iter()
-        .filter(|&i| start + i < input.len() && input[start + i] - input[*start] <= 3)
-    {
-        if *start == 0 {
-            println!("i {}", i)
+        if i >= 1 && input[i] - input[i - 1] <= 3 {
+            count += branches[i - 1]
         }
-        let diff = input[start + i] - input[*start];
-        if diff > 3 {
-            // if first diff is > 3 no can follow, scnd diff > 3 -> no third possible
-            break; // thus no need to check
+        if i >= 2 && input[i] - input[i - 2] <= 3 {
+            count += branches[i - 2]
+        }
+        if i >= 3 && input[i] - input[i - 3] <= 3 {
+            count += branches[i - 3]
         }
 
-        ret += count_posibilities(input, &(start + i));
+        branches[i] = count;
     }
 
-    ret
+    branches[branches.len() - 1]
 }
 
 #[cfg(test)]

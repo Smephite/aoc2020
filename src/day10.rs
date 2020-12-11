@@ -30,7 +30,7 @@ fn part2(input: &[usize]) -> usize {
 
     branches[0] = 1;
 
-    for i in (1..branches.len()) {
+    for i in 1..branches.len() {
         let mut count = 0;
 
         if i >= 1 && input[i] - input[i - 1] <= 3 {

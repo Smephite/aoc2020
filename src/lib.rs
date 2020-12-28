@@ -22,5 +22,5 @@ pub mod day15;
 pub mod day16;
 
 pub mod day21;
-
+pub mod day22;
 aoc_lib! { year = 2020 }
